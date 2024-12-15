@@ -182,7 +182,7 @@ nates_calendar = """
 """
 
 client = openai.OpenAI(
-    api_key='sk-proj-68tTZuQnIAcJvfys79S9T3BlbkFJ0Jm2qYditX7UC1xk8jqH',
+    api_key=os.environ.get('KEY_THAT_MIGHT_EXIST'),
 )
 
 @app.route('/api/chat', methods=['POST'])
