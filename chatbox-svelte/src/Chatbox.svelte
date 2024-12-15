@@ -1,57 +1,55 @@
 <script>
-    let chats = []; // List of chat titles
-    let activeChat = null; // Active chat index
-    let messages = []; // Messages for the current chat
-    let userInput = ""; // Input for the message box
-    let botTyping = false; // Bot typing indicator
+  import {marked} from "marked";
+    let chats = [];
+    let activeChat = null;
+    let messages = [];
+    let userInput = "";
+    let botTyping = false;
   
-    // Add a new chat
     const createNewChat = () => {
       const newChat = { title: `Chat ${chats.length + 1}`, messages: [] };
       chats = [...chats, newChat];
-      switchChat(chats.length - 1); // Switch to the new chat
+      switchChat(chats.length - 1);
     };
-  
-    // Switch to a specific chat
+
     const switchChat = (index) => {
       activeChat = index;
       messages = chats[index].messages;
     };
-  
-    // Handle sending a message
     const sendMessage = async () => {
       if (userInput.trim() && activeChat !== null) {
         const userMessage = { sender: "user", text: userInput };
         chats[activeChat].messages = [...chats[activeChat].messages, userMessage];
         messages = chats[activeChat].messages;
-        const userInputText = userInput; // Store user input locally
-        userInput = ""; // Clear the input
-        await fetchAIResponse(userInputText); // Send user input to AI
+        const userInputText = userInput;
+        userInput = "";
+        await fetchAIResponse(userInputText);
       }
     };
   
-    // Fetch AI response
     const fetchAIResponse = async (userInputText) => {
       botTyping = true;
       try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        const response = await fetch("http://localhost:5001/api/chat", {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer YOUR_OPENAI_API_KEY` // Replace with your actual API key
+            "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            model: "gpt-4o",
-            messages: [{ role: "user", content: userInputText }]
-          })
+          body: JSON.stringify({ message: userInputText })
         });
+
         const data = await response.json();
-        const botMessage = {
-          sender: "bot",
-          text: data.choices[0].message.content
-        };
-        chats[activeChat].messages = [...chats[activeChat].messages, botMessage];
-        messages = chats[activeChat].messages;
+
+        if (data.response) {
+          const botMessage = {
+            sender: "bot",
+            text: data.response
+          };
+          chats[activeChat].messages = [...chats[activeChat].messages, botMessage];
+          messages = chats[activeChat].messages;
+        } else {
+          throw new Error(data.error || "Unexpected error");
+        }
       } catch (error) {
         console.error("Error fetching AI response:", error);
         const errorMessage = {
@@ -64,20 +62,18 @@
         botTyping = false;
       }
     };
-  
-    // Delete a chat
+
     const deleteChat = (index) => {
-      chats = chats.filter((_, i) => i !== index); // Remove the chat
+      chats = chats.filter((_, i) => i !== index);
       if (activeChat === index) {
-        activeChat = null; // Deselect the active chat if it's deleted
+        activeChat = null;
         messages = [];
       } else if (activeChat > index) {
-        activeChat -= 1; // Adjust the active chat index if a previous chat is deleted
+        activeChat -= 1;
       }
     };
   </script>
 <div class="chat-app">
-    <!-- Sidebar -->
     <div class="sidebar">
       <div class="chat-list">
         {#each chats as chat, index}
@@ -93,14 +89,13 @@
       <button class="new-chat" on:click={createNewChat}>+ New Chat</button>
     </div>
   
-    <!-- Chatbox -->
     <div class="chatbox">
       {#if activeChat !== null}
         <div class="messages">
           {#each messages as { sender, text }}
             <div class="message-container {sender}">
               <div class="message {sender}">
-                {text}
+                {@html marked(text)}
               </div>
             </div>
           {/each}
@@ -137,7 +132,6 @@
       background-color: #fff;
     }
   
-    /* Sidebar styles */
     .sidebar {
       width: 200px;
       border-right: 1px solid #ccc;
@@ -194,8 +188,7 @@
     .new-chat:hover {
       background-color: #0056b3;
     }
-  
-    /* Chatbox styles */
+
     .chatbox {
       flex-grow: 1;
       display: flex;

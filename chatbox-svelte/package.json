@@ -19,6 +19,11 @@
     "svelte": "^3.55.0"
   },
   "dependencies": {
+    "marked": "^15.0.3",
     "sirv-cli": "^2.0.0"
-  }
+  },
+  "description": "---",
+  "main": "rollup.config.js",
+  "author": "",
+  "license": "ISC"
 }
