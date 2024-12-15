@@ -2,6 +2,15 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import openai
 import os
+from phoenix.otel import register
+PHOENIX_API_KEY = "ADD YOUR API KEY"
+os.environ["PHOENIX_CLIENT_HEADERS"] = f"api_key={PHOENIX_API_KEY}"
+
+# configure the Phoenix tracer
+tracer_provider = register(
+  project_name="timey", # Default is 'default'
+  endpoint="https://app.phoenix.arize.com/v1/traces",
+)
 
 app = Flask(__name__)
 CORS(app)
@@ -182,7 +191,7 @@ nates_calendar = """
 """
 
 client = openai.OpenAI(
-    api_key=os.environ.get('KEY_THAT_MIGHT_EXIST'),
+    api_key=os.environ.get('OPEN_API_KEY'),
 )
 
 @app.route('/api/chat', methods=['POST'])
